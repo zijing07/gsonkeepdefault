@@ -1,4 +1,4 @@
-package a
+package me.mozidev.keepdefault
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
