@@ -14,7 +14,7 @@ print(a1.a) // null
 
 This happens often during developing, since Kotlin can do no assurance on JVM running time.
 
-However, what we need is pretty simple: we want our codes run as it seem like. So I write this `gsonkeepdefault` library to help you keep the default values of `data class` in development.
+However, what we need is pretty simple: we want our codes run as they seem like. So I write this `gsonkeepdefault` library to help you keep the default values of `data class` in development.
 
 ## How to use
 
@@ -58,9 +58,11 @@ dependencies {
 ```kotlin
 @KeepDefault
 data class AValue(val a: String = "keep me")
-val a1 = Kson.fromJson<AValue>("""{"a":null}""")
+val a1 = KGson.fromJson<AValue>("""{"a":null}""")
 print(a1.a) // "keep me"
 ```
+
+Note that you need to use `KGson` here instead of `Gson`.
 
 ## Related Libraries
 
