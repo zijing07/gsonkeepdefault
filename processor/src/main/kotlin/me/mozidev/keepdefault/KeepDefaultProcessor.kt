@@ -1,22 +1,9 @@
 package me.mozidev.keepdefault
 
 import com.google.auto.service.AutoService
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
-import com.squareup.kotlinpoet.asTypeName
-import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
-import me.eugeniomarletti.kotlin.metadata.KotlinMetadataUtils
-import me.eugeniomarletti.kotlin.metadata.declaresDefaultValue
-import me.eugeniomarletti.kotlin.metadata.isDataClass
-import me.eugeniomarletti.kotlin.metadata.isPrimary
-import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
+import me.eugeniomarletti.kotlin.metadata.*
 import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
 import me.eugeniomarletti.kotlin.metadata.shadow.metadata.deserialization.NameResolver
 import me.eugeniomarletti.kotlin.metadata.shadow.serialization.deserialization.getName
@@ -91,7 +78,7 @@ class KeepDefaultProcessor : KotlinAbstractProcessor(), KotlinMetadataUtils {
             .addFunction(generateTryKeepDefault(typeName, kotlinClassMetadata))
             .build())
 
-        result.build().writeTo(File(fileDir, helperClassName))
+        result.build().writeTo(File(fileDir, helperClassName).also { if (!it.exists()) it.mkdirs() })
 
         return helperClassName
     }
@@ -100,16 +87,20 @@ class KeepDefaultProcessor : KotlinAbstractProcessor(), KotlinMetadataUtils {
 
         val (nameAllocator, classProto) = metadata.data
 
+        // the Gson-parsed data object
         val originParam = ParameterSpec
             .builder("originData", typeName.asNullable())
             .build()
 
+        // retrieve all the fields from DataClass' constructor
         val propList = classProto.constructorList.single { it.isPrimary }.valueParameterList
 
         val noDefaultMarked = propList.count { it.declaresDefaultValue } == 0
         if (showErrorIfNoDefault && noDefaultMarked) {
             messager.printMessage(Diagnostic.Kind.ERROR, "There is no default value for any property")
         }
+
+        // if non field is marked with "default", return the Gson-pared data object
         val statements = if (noDefaultMarked) {
             generateNoDefaultSpecified()
         } else {
@@ -131,6 +122,12 @@ class KeepDefaultProcessor : KotlinAbstractProcessor(), KotlinMetadataUtils {
         return listOf("return originData")
     }
 
+    /**
+     * do the real work,
+     * 1. check all the fields set with "default" modifier
+     * 2. check if it is "nullable"
+     * 3. override the null value of "NonNull-Default" field
+     */
     private fun generateCheckDefault(
         typeName: TypeName,
         nameAllocator: NameResolver,

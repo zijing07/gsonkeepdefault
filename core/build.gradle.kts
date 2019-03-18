@@ -8,6 +8,6 @@ dependencies {
     implementation(kotlin("stdlib"))
     
     kaptTest(project(":processor"))
-    testImplementation(project(":gsonkeepdefault-processor"))
+    testImplementation(project(":processor"))
     testImplementation("junit", "junit", "4.12")
 }
