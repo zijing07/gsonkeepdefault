@@ -12,13 +12,13 @@ val a1 = Gson.fromJson("""{"a":null}""", AValue::class.java)
 print(a1.a) // null
 ```
 
-This happens often during developing, since Kotlin can do no assurance on JVM running time.
+This happens often during developing, since Kotlin can do no assurance on JVM runtime.
 
 However, what we need is pretty simple: we want our codes run as they seem like. So I write this `gsonkeepdefault` library to help you keep the default values of `data class` in development.
 
-## How to use
+## How To Use
 
-### Dependency (gradle)
+### Dependency (Gradle)
 
 ```groovy
 repositories {
@@ -34,7 +34,7 @@ dependencies {
 }
 ```
 
-### Dependency (kotlin dsl build script)
+### Dependency (Kotlin DSL Build Script)
 
 ```groovy
 plugins {
@@ -62,7 +62,7 @@ val a1 = KGson.fromJson<AValue>("""{"a":null}""")
 print(a1.a) // "keep me"
 ```
 
-Note that you need to use `KGson` here instead of `Gson`.
+Please note that you need to use `KGson` here instead of `Gson`.
 
 ## Related Libraries
 
